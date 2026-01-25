@@ -15,7 +15,10 @@ let gameInterval = null;
 let lastGestureTime = 0;
 const GESTURE_DELAY = 300;
 
-// 🎮 GAME START (ONLY ON HAND DETECTION)
+// 🎨 DRAW ONCE (IMPORTANT FIX)
+drawGame();
+
+// 🎮 START GAME ONLY ON HAND DETECTION
 function startGame() {
   if (!gameStarted) {
     gameStarted = true;
@@ -52,9 +55,11 @@ function moveSnake() {
 function drawGame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  // snake
   ctx.fillStyle = "lime";
   snake.forEach(s => ctx.fillRect(s.x, s.y, size, size));
 
+  // food
   ctx.fillStyle = "red";
   ctx.fillRect(food.x, food.y, size, size);
 }
@@ -71,7 +76,7 @@ function setDirection(newDir) {
   direction = newDir;
 }
 
-// 📷 CAMERA ACCESS (NO GAME START HERE)
+// 📷 CAMERA (NO GAME START HERE)
 navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
   video.srcObject = stream;
 });
@@ -91,7 +96,7 @@ hands.setOptions({
 hands.onResults(results => {
   if (!results.multiHandLandmarks) return;
 
-  // ✅ START GAME ONLY WHEN HAND IS FIRST DETECTED
+  // ✅ start game on FIRST hand detection
   if (!gameStarted) {
     startGame();
   }
@@ -101,7 +106,7 @@ hands.onResults(results => {
 
   const hand = results.multiHandLandmarks[0];
 
-  // palm center (stable)
+  // palm center
   const x = hand[9].x;
   const y = hand[9].y;
 
