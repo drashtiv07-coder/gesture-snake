@@ -3,85 +3,87 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const statusText = document.getElementById("status");
 
-let snake = [{ x: 200, y: 200 }];
-let direction = "RIGHT";
-let food = { x: 100, y: 100 };
-let size = 20;
+const box = 20;
+const rows = canvas.width / box;
+const cols = canvas.height / box;
+
+let snake = [{ x: 10, y: 10 }];
+let direction = null;
+let food = {
+  x: Math.floor(Math.random() * rows),
+  y: Math.floor(Math.random() * cols)
+};
 
 let gameStarted = false;
-let gameInterval = null;
-
-// gesture helpers
 let lastGestureTime = 0;
-const GESTURE_DELAY = 300;
 
-// 🎨 DRAW ONCE (IMPORTANT FIX)
-drawGame();
-
-// 🎮 START GAME ONLY ON HAND DETECTION
-function startGame() {
-  if (!gameStarted) {
-    gameStarted = true;
-    statusText.innerText = "Game Started! Move your hand ✋";
-    gameInterval = setInterval(gameLoop, 200);
-  }
+// 🔹 DRAW BACKGROUND ALWAYS
+function drawBackground() {
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-function gameLoop() {
-  moveSnake();
-  drawGame();
+// 🔹 DRAW GAME
+function drawGame() {
+  drawBackground();
+
+  // food
+  ctx.fillStyle = "red";
+  ctx.fillRect(food.x * box, food.y * box, box, box);
+
+  // snake
+  ctx.fillStyle = "lime";
+  snake.forEach(part => {
+    ctx.fillRect(part.x * box, part.y * box, box, box);
+  });
 }
 
+// 🔹 MOVE SNAKE
 function moveSnake() {
+  if (!direction) return;
+
   let head = { ...snake[0] };
 
-  if (direction === "LEFT") head.x -= size;
-  if (direction === "RIGHT") head.x += size;
-  if (direction === "UP") head.y -= size;
-  if (direction === "DOWN") head.y += size;
+  if (direction === "LEFT") head.x--;
+  if (direction === "RIGHT") head.x++;
+  if (direction === "UP") head.y--;
+  if (direction === "DOWN") head.y++;
 
   snake.unshift(head);
 
   if (head.x === food.x && head.y === food.y) {
     food = {
-      x: Math.floor(Math.random() * 20) * size,
-      y: Math.floor(Math.random() * 20) * size
+      x: Math.floor(Math.random() * rows),
+      y: Math.floor(Math.random() * cols)
     };
   } else {
     snake.pop();
   }
 }
 
-function drawGame() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // snake
-  ctx.fillStyle = "lime";
-  snake.forEach(s => ctx.fillRect(s.x, s.y, size, size));
-
-  // food
-  ctx.fillStyle = "red";
-  ctx.fillRect(food.x, food.y, size, size);
+// 🔹 GAME LOOP
+function gameLoop() {
+  moveSnake();
+  drawGame();
 }
 
-// 🚫 BLOCK OPPOSITE DIRECTION
-function setDirection(newDir) {
-  if (
-    (direction === "LEFT" && newDir === "RIGHT") ||
-    (direction === "RIGHT" && newDir === "LEFT") ||
-    (direction === "UP" && newDir === "DOWN") ||
-    (direction === "DOWN" && newDir === "UP")
-  ) return;
-
-  direction = newDir;
+// 🔹 START GAME
+function startGame() {
+  if (gameStarted) return;
+  gameStarted = true;
+  statusText.innerText = "Game Started!";
+  setInterval(gameLoop, 200);
 }
 
-// 📷 CAMERA (NO GAME START HERE)
+// INITIAL DRAW (VERY IMPORTANT)
+drawGame();
+
+// 📷 CAMERA
 navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
   video.srcObject = stream;
 });
 
-// ✋ MEDIAPIPE HANDS
+// ✋ MEDIAPIPE
 const hands = new Hands({
   locateFile: file =>
     `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
@@ -96,29 +98,20 @@ hands.setOptions({
 hands.onResults(results => {
   if (!results.multiHandLandmarks) return;
 
-  // ✅ start game on FIRST hand detection
-  if (!gameStarted) {
-    startGame();
-  }
+  if (!gameStarted) startGame();
 
   const now = Date.now();
-  if (now - lastGestureTime < GESTURE_DELAY) return;
+  if (now - lastGestureTime < 300) return;
+  lastGestureTime = now;
 
   const hand = results.multiHandLandmarks[0];
-
-  // palm center
   const x = hand[9].x;
   const y = hand[9].y;
 
-  // dead zone
-  if (x > 0.4 && x < 0.6 && y > 0.4 && y < 0.6) return;
-
-  if (x < 0.3) setDirection("LEFT");
-  else if (x > 0.7) setDirection("RIGHT");
-  else if (y < 0.3) setDirection("UP");
-  else if (y > 0.7) setDirection("DOWN");
-
-  lastGestureTime = now;
+  if (x < 0.3) direction = "LEFT";
+  else if (x > 0.7) direction = "RIGHT";
+  else if (y < 0.3) direction = "UP";
+  else if (y > 0.7) direction = "DOWN";
 });
 
 const camera = new Camera(video, {
