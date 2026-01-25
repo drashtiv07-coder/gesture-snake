@@ -5,6 +5,11 @@ body {
   text-align: center;
 }
 
+#status {
+  color: yellow;
+  font-weight: bold;
+}
+
 video {
   width: 300px;
   margin: 10px;
