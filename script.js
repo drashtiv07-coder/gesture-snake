@@ -7,12 +7,25 @@ let direction = "RIGHT";
 let food = { x: 100, y: 100 };
 let size = 20;
 
-// 🎮 GAME LOOP
+let gameStarted = false;
+let gameInterval = null;
+
+// gesture control helpers
+let lastGestureTime = 0;
+const GESTURE_DELAY = 300; // ms
+
+// 🎮 START GAME AFTER CAMERA
+function startGame() {
+  if (!gameStarted) {
+    gameStarted = true;
+    gameInterval = setInterval(gameLoop, 200);
+  }
+}
+
 function gameLoop() {
   moveSnake();
   drawGame();
 }
-setInterval(gameLoop, 200);
 
 function moveSnake() {
   let head = { ...snake[0] };
@@ -37,20 +50,32 @@ function moveSnake() {
 function drawGame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Snake
   ctx.fillStyle = "lime";
   snake.forEach(s => ctx.fillRect(s.x, s.y, size, size));
 
-  // Food
   ctx.fillStyle = "red";
   ctx.fillRect(food.x, food.y, size, size);
 }
 
-// 📷 CAMERA + HAND GESTURES
+// 🚫 BLOCK OPPOSITE DIRECTION
+function setDirection(newDir) {
+  if (
+    (direction === "LEFT" && newDir === "RIGHT") ||
+    (direction === "RIGHT" && newDir === "LEFT") ||
+    (direction === "UP" && newDir === "DOWN") ||
+    (direction === "DOWN" && newDir === "UP")
+  ) return;
+
+  direction = newDir;
+}
+
+// 📷 CAMERA PERMISSION
 navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
   video.srcObject = stream;
+  startGame();
 });
 
+// ✋ MEDIAPIPE HANDS
 const hands = new Hands({
   locateFile: file =>
     `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
@@ -65,14 +90,24 @@ hands.setOptions({
 hands.onResults(results => {
   if (!results.multiHandLandmarks) return;
 
-  const hand = results.multiHandLandmarks[0];
-  const x = hand[0].x;
-  const y = hand[0].y;
+  const now = Date.now();
+  if (now - lastGestureTime < GESTURE_DELAY) return;
 
-  if (x < 0.3) direction = "LEFT";
-  else if (x > 0.7) direction = "RIGHT";
-  else if (y < 0.3) direction = "UP";
-  else if (y > 0.7) direction = "DOWN";
+  const hand = results.multiHandLandmarks[0];
+
+  // 🖐️ Palm center (more stable)
+  const x = hand[9].x;
+  const y = hand[9].y;
+
+  // 🛑 DEAD ZONE (center)
+  if (x > 0.4 && x < 0.6 && y > 0.4 && y < 0.6) return;
+
+  if (x < 0.3) setDirection("LEFT");
+  else if (x > 0.7) setDirection("RIGHT");
+  else if (y < 0.3) setDirection("UP");
+  else if (y > 0.7) setDirection("DOWN");
+
+  lastGestureTime = now;
 });
 
 const camera = new Camera(video, {
