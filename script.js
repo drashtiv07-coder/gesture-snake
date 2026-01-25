@@ -1,6 +1,7 @@
 const video = document.getElementById("video");
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+const statusText = document.getElementById("status");
 
 let snake = [{ x: 200, y: 200 }];
 let direction = "RIGHT";
@@ -10,14 +11,15 @@ let size = 20;
 let gameStarted = false;
 let gameInterval = null;
 
-// gesture control helpers
+// gesture helpers
 let lastGestureTime = 0;
-const GESTURE_DELAY = 300; // ms
+const GESTURE_DELAY = 300;
 
-// 🎮 START GAME AFTER CAMERA
+// 🎮 GAME START (ONLY ON HAND DETECTION)
 function startGame() {
   if (!gameStarted) {
     gameStarted = true;
+    statusText.innerText = "Game Started! Move your hand ✋";
     gameInterval = setInterval(gameLoop, 200);
   }
 }
@@ -69,10 +71,9 @@ function setDirection(newDir) {
   direction = newDir;
 }
 
-// 📷 CAMERA PERMISSION
+// 📷 CAMERA ACCESS (NO GAME START HERE)
 navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
   video.srcObject = stream;
-  startGame();
 });
 
 // ✋ MEDIAPIPE HANDS
@@ -90,16 +91,21 @@ hands.setOptions({
 hands.onResults(results => {
   if (!results.multiHandLandmarks) return;
 
+  // ✅ START GAME ONLY WHEN HAND IS FIRST DETECTED
+  if (!gameStarted) {
+    startGame();
+  }
+
   const now = Date.now();
   if (now - lastGestureTime < GESTURE_DELAY) return;
 
   const hand = results.multiHandLandmarks[0];
 
-  // 🖐️ Palm center (more stable)
+  // palm center (stable)
   const x = hand[9].x;
   const y = hand[9].y;
 
-  // 🛑 DEAD ZONE (center)
+  // dead zone
   if (x > 0.4 && x < 0.6 && y > 0.4 && y < 0.6) return;
 
   if (x < 0.3) setDirection("LEFT");
