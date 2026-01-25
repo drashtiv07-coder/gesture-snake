@@ -1,23 +1,24 @@
 body {
-  font-family: Arial, sans-serif;
   background: #111;
   color: white;
   text-align: center;
+  font-family: Arial;
+}
+
+video {
+  width: 280px;
+  border: 2px solid lime;
+  margin-bottom: 10px;
+}
+
+canvas {
+  background: #000;
+  border: 3px solid lime;
+  display: block;
+  margin: 0 auto;
 }
 
 #status {
   color: yellow;
   font-weight: bold;
-}
-
-video {
-  width: 300px;
-  margin: 10px;
-  border: 2px solid #0f0;
-}
-
-canvas {
-  background: black;
-  border: 3px solid #0f0;
-  margin-top: 10px;
 }
