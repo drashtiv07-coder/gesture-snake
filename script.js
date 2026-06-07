@@ -1,63 +1,34 @@
-const video =
-document.getElementById(
-"video"
-);
+const video=document.getElementById("video");
 
-const canvas =
-document.getElementById(
-"game"
-);
+const canvas=document.getElementById("game");
 
-const ctx =
-canvas.getContext(
-"2d"
-);
+const ctx=canvas.getContext("2d");
 
-const statusText =
-document.getElementById(
-"status"
-);
+const status=document.getElementById("status");
 
-const scoreText =
-document.getElementById(
-"score"
-);
+const scoreText=document.getElementById("score");
 
-const SIZE = 20;
+const SIZE=20;
 
-const GRID = 20;
+const GRID=20;
 
-let score = 0;
+let score=0;
 
-let direction = "RIGHT";
+let direction="RIGHT";
 
-let snake = [
+let snake=[{x:10,y:10}];
 
-{x:10,y:10}
-
-];
-
-let food = {
-
-x:15,
-
-y:10
-
-};
+let food={x:15,y:10};
 
 
 
-function randomFood(){
+function newFood(){
 
 food={
 
-x:Math.floor(
-Math.random()*GRID
-),
+x:Math.floor(Math.random()*GRID),
 
-y:Math.floor(
-Math.random()*GRID
-)
+y:Math.floor(Math.random()*GRID)
 
 };
 
@@ -72,7 +43,6 @@ ctx.fillStyle="black";
 ctx.fillRect(
 
 0,
-
 0,
 
 canvas.width,
@@ -99,13 +69,11 @@ SIZE
 
 
 
-snake.forEach(
-
-(part,index)=>{
+snake.forEach((s,i)=>{
 
 ctx.fillStyle=
 
-index===0
+i==0
 
 ?
 
@@ -115,13 +83,11 @@ index===0
 
 "lime";
 
-
-
 ctx.fillRect(
 
-part.x*SIZE,
+s.x*SIZE,
 
-part.y*SIZE,
+s.y*SIZE,
 
 SIZE,
 
@@ -129,9 +95,7 @@ SIZE
 
 );
 
-}
-
-);
+});
 
 }
 
@@ -139,12 +103,7 @@ SIZE
 
 function move(){
 
-
-let head={
-
-...snake[0]
-
-};
+let head={...snake[0]};
 
 
 
@@ -162,16 +121,15 @@ head.y++;
 
 
 
-
 if(
 
-head.x<0 ||
+head.x<0||
 
-head.y<0 ||
+head.y<0||
 
-head.x>=GRID ||
+head.x>=GRID||
 
-head.y>=GRID ||
+head.y>=GRID||
 
 snake.some(
 
@@ -183,17 +141,9 @@ s.y===head.y
 
 )
 
-)
+){
 
-{
-
-alert(
-
-"Game Over\nScore: "
-
-+score
-
-);
+alert("Game Over");
 
 location.reload();
 
@@ -203,21 +153,17 @@ return;
 
 
 
-snake.unshift(
-head
-);
+snake.unshift(head);
 
 
 
 if(
 
-head.x===food.x &&
+head.x===food.x&&
 
 head.y===food.y
 
-)
-
-{
+){
 
 score++;
 
@@ -225,7 +171,7 @@ scoreText.innerText=
 
 "Score: "+score;
 
-randomFood();
+newFood();
 
 }
 
@@ -243,10 +189,6 @@ draw();
 
 
 
-draw();
-
-
-
 setInterval(
 
 move,
@@ -257,9 +199,13 @@ move,
 
 
 
+draw();
 
 
-const hands =
+
+
+
+const hands=
 
 new Hands({
 
@@ -275,11 +221,11 @@ hands.setOptions({
 
 maxNumHands:1,
 
-modelComplexity:1,
+modelComplexity:0,
 
-minDetectionConfidence:0.5,
+minDetectionConfidence:0.4,
 
-minTrackingConfidence:0.5
+minTrackingConfidence:0.4
 
 });
 
@@ -297,9 +243,9 @@ results.multiHandLandmarks.length===0
 
 ){
 
-statusText.innerText=
+status.innerText=
 
-"Show Hand";
+"No Hand";
 
 return;
 
@@ -307,29 +253,47 @@ return;
 
 
 
-statusText.innerText=
+status.innerText=
 
 "Hand Detected";
 
 
 
-const finger=
+const hand=
 
-results
-
-.multiHandLandmarks[0][8];
+results.multiHandLandmarks[0];
 
 
 
-const x=finger.x;
+let centerX=0;
 
-const y=finger.y;
+let centerY=0;
+
+
+
+for(
+
+let point of hand
+
+){
+
+centerX+=point.x;
+
+centerY+=point.y;
+
+}
+
+
+
+centerX/=21;
+
+centerY/=21;
 
 
 
 if(
 
-x<0.35 &&
+centerX<0.4 &&
 
 direction!=="RIGHT"
 
@@ -341,7 +305,7 @@ direction="LEFT";
 
 else if(
 
-x>0.65 &&
+centerX>0.6 &&
 
 direction!=="LEFT"
 
@@ -353,7 +317,7 @@ direction="RIGHT";
 
 else if(
 
-y<0.35 &&
+centerY<0.4 &&
 
 direction!=="DOWN"
 
@@ -365,7 +329,7 @@ direction="UP";
 
 else if(
 
-y>0.65 &&
+centerY>0.6 &&
 
 direction!=="UP"
 
@@ -382,9 +346,8 @@ direction="DOWN";
 
 
 
-navigator
 
-.mediaDevices
+navigator.mediaDevices
 
 .getUserMedia({
 
@@ -392,13 +355,9 @@ video:true
 
 })
 
-.then(
+.then(stream=>{
 
-(stream)=>{
-
-video.srcObject=
-
-stream;
+video.srcObject=stream;
 
 
 
@@ -410,9 +369,7 @@ video,
 
 {
 
-onFrame:
-
-async()=>{
+onFrame:async()=>{
 
 await hands.send({
 
@@ -434,18 +391,4 @@ height:480
 
 camera.start();
 
-}
-
-)
-
-.catch(
-
-()=>{
-
-statusText.innerText=
-
-"Camera Denied";
-
-}
-
-);
+});
