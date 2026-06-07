@@ -1,31 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
 
-<meta charset="UTF-8">
+<title>Gesture Snake Game</title>
 
-<meta name="viewport"
-content="width=device-width,initial-scale=1.0">
-
-<title>
-Gesture Snake Game
-</title>
-
-<link rel="stylesheet"
-href="style.css">
+<link rel="stylesheet" href="style.css">
 
 </head>
 
 <body>
 
 <h1>
+
 🖐 Gesture Controlled Snake Game
+
 </h1>
 
 <p id="status">
 
-Show your hand to start
+Loading Camera...
 
 </p>
 
@@ -35,22 +29,30 @@ Score: 0
 
 </h2>
 
+
 <video
+
 id="video"
+
 autoplay
+
 playsinline>
+
 </video>
 
+
 <canvas
-id="gameCanvas"
+
+id="game"
+
 width="400"
+
 height="400">
+
 </canvas>
 
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
