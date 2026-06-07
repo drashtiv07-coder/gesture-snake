@@ -295,11 +295,11 @@ if(
 
 centerX<0.4 &&
 
-direction!=="RIGHT"
+direction!=="LEFT"
 
 )
 
-direction="LEFT";
+direction="RIGHT";
 
 
 
@@ -307,11 +307,11 @@ else if(
 
 centerX>0.6 &&
 
-direction!=="LEFT"
+direction!=="RIGHT"
 
 )
 
-direction="RIGHT";
+direction="LEFT";
 
 
 
