@@ -1,21 +1,35 @@
 const video =
-document.getElementById("video");
+document.getElementById(
+"video"
+);
 
 const canvas =
-document.getElementById("gameCanvas");
+document.getElementById(
+"game"
+);
 
 const ctx =
-canvas.getContext("2d");
+canvas.getContext(
+"2d"
+);
 
 const statusText =
-document.getElementById("status");
+document.getElementById(
+"status"
+);
 
 const scoreText =
-document.getElementById("score");
+document.getElementById(
+"score"
+);
 
-const box = 20;
+const SIZE = 20;
 
-const grid = 20;
+const GRID = 20;
+
+let score = 0;
+
+let direction = "RIGHT";
 
 let snake = [
 
@@ -23,34 +37,26 @@ let snake = [
 
 ];
 
-let direction = null;
-
-let score = 0;
-
 let food = {
 
-x:5,
+x:15,
 
-y:5
+y:10
 
 };
 
-let gameStarted=false;
 
 
-
-function createFood(){
+function randomFood(){
 
 food={
 
-x:
-Math.floor(
-Math.random()*grid
+x:Math.floor(
+Math.random()*GRID
 ),
 
-y:
-Math.floor(
-Math.random()*grid
+y:Math.floor(
+Math.random()*GRID
 )
 
 };
@@ -59,7 +65,7 @@ Math.random()*grid
 
 
 
-function drawGame(){
+function draw(){
 
 ctx.fillStyle="black";
 
@@ -81,13 +87,13 @@ ctx.fillStyle="red";
 
 ctx.fillRect(
 
-food.x*box,
+food.x*SIZE,
 
-food.y*box,
+food.y*SIZE,
 
-box,
+SIZE,
 
-box
+SIZE
 
 );
 
@@ -109,36 +115,29 @@ index===0
 
 "lime";
 
+
+
 ctx.fillRect(
 
-part.x*box,
+part.x*SIZE,
 
-part.y*box,
+part.y*SIZE,
 
-box,
+SIZE,
 
-box
-
-);
-
-}
+SIZE
 
 );
 
 }
 
-
-
-function moveSnake(){
-
-if(!direction){
-
-drawGame();
-
-return;
+);
 
 }
 
+
+
+function move(){
 
 
 let head={
@@ -163,23 +162,24 @@ head.y++;
 
 
 
+
 if(
 
 head.x<0 ||
 
 head.y<0 ||
 
-head.x>=grid ||
+head.x>=GRID ||
 
-head.y>=grid ||
+head.y>=GRID ||
 
 snake.some(
 
-part=>
+s=>
 
-part.x===head.x &&
+s.x===head.x &&
 
-part.y===head.y
+s.y===head.y
 
 )
 
@@ -189,7 +189,7 @@ part.y===head.y
 
 alert(
 
-"Game Over!\nScore: "
+"Game Over\nScore: "
 
 +score
 
@@ -203,7 +203,9 @@ return;
 
 
 
-snake.unshift(head);
+snake.unshift(
+head
+);
 
 
 
@@ -221,11 +223,9 @@ score++;
 
 scoreText.innerText=
 
-"Score: "
+"Score: "+score;
 
-+score;
-
-createFood();
+randomFood();
 
 }
 
@@ -237,15 +237,19 @@ snake.pop();
 
 
 
-drawGame();
+draw();
 
 }
 
 
 
+draw();
+
+
+
 setInterval(
 
-moveSnake,
+move,
 
 180
 
@@ -253,18 +257,13 @@ moveSnake,
 
 
 
-drawGame();
-
-
-
 
 
 const hands =
+
 new Hands({
 
-locateFile:
-
-(file)=>
+locateFile:(file)=>
 
 `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
 
@@ -276,9 +275,11 @@ hands.setOptions({
 
 maxNumHands:1,
 
-minDetectionConfidence:0.7,
+modelComplexity:1,
 
-minTrackingConfidence:0.7
+minDetectionConfidence:0.5,
+
+minTrackingConfidence:0.5
 
 });
 
@@ -294,43 +295,41 @@ if(
 
 results.multiHandLandmarks.length===0
 
-)
-
-return;
-
-
-
-if(!gameStarted){
+){
 
 statusText.innerText=
 
-"Hand Detected";
+"Show Hand";
 
-gameStarted=true;
+return;
 
 }
 
 
 
-const hand=
+statusText.innerText=
 
-results.multiHandLandmarks[0];
+"Hand Detected";
 
 
 
-const x=
+const finger=
 
-hand[9].x;
+results
 
-const y=
+.multiHandLandmarks[0][8];
 
-hand[9].y;
+
+
+const x=finger.x;
+
+const y=finger.y;
 
 
 
 if(
 
-x<0.3 &&
+x<0.35 &&
 
 direction!=="RIGHT"
 
@@ -342,7 +341,7 @@ direction="LEFT";
 
 else if(
 
-x>0.7 &&
+x>0.65 &&
 
 direction!=="LEFT"
 
@@ -354,7 +353,7 @@ direction="RIGHT";
 
 else if(
 
-y<0.3 &&
+y<0.35 &&
 
 direction!=="DOWN"
 
@@ -366,7 +365,7 @@ direction="UP";
 
 else if(
 
-y>0.7 &&
+y>0.65 &&
 
 direction!=="UP"
 
@@ -383,8 +382,9 @@ direction="DOWN";
 
 
 
+navigator
 
-navigator.mediaDevices
+.mediaDevices
 
 .getUserMedia({
 
@@ -434,8 +434,6 @@ height:480
 
 camera.start();
 
-
-
 }
 
 )
@@ -446,7 +444,7 @@ camera.start();
 
 statusText.innerText=
 
-"Camera Permission Denied";
+"Camera Denied";
 
 }
 
