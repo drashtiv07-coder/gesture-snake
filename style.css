@@ -32,8 +32,6 @@ font-weight:bold;
 
 color:lime;
 
-margin-bottom:10px;
-
 }
 
 video{
@@ -44,7 +42,7 @@ border:3px solid lime;
 
 border-radius:10px;
 
-margin-bottom:15px;
+margin-bottom:20px;
 
 transform:scaleX(-1);
 
@@ -56,9 +54,9 @@ display:block;
 
 margin:auto;
 
-background:black;
+border:4px solid lime;
 
-border:3px solid lime;
+background:black;
 
 border-radius:10px;
 
