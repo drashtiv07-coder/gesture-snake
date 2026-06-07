@@ -13,96 +13,60 @@ document.getElementById("status");
 const scoreText =
 document.getElementById("score");
 
-const box=20;
+const box = 20;
 
-const rows=
-canvas.width/box;
+const grid = 20;
 
-const cols=
-canvas.height/box;
+let snake = [
 
-let snake;
-
-let direction;
-
-let food;
-
-let score;
-
-let gameStarted=false;
-
-let gameInterval;
-
-let lastGestureTime=0;
-
-
-function resetGame(){
-
-snake=[
 {x:10,y:10}
+
 ];
 
-direction=null;
+let direction = null;
 
-score=0;
+let score = 0;
 
-scoreText.innerText=
-"Score: "+score;
+let food = {
 
-food=createFood();
+x:5,
 
-drawGame();
+y:5
 
-}
+};
 
-resetGame();
+let gameStarted=false;
 
 
 
 function createFood(){
 
-let newFood;
+food={
 
-do{
-
-newFood={
-
-x:Math.floor(
-Math.random()*rows
+x:
+Math.floor(
+Math.random()*grid
 ),
 
-y:Math.floor(
-Math.random()*cols
+y:
+Math.floor(
+Math.random()*grid
 )
 
 };
 
 }
 
-while(
-
-snake.some(
-
-s=>s.x===newFood.x &&
-s.y===newFood.y
-
-)
-
-);
-
-return newFood;
-
-}
 
 
-
-function drawBackground(){
+function drawGame(){
 
 ctx.fillStyle="black";
 
 ctx.fillRect(
 
 0,
+
 0,
 
 canvas.width,
@@ -111,16 +75,7 @@ canvas.height
 
 );
 
-}
 
-
-
-function drawGame(){
-
-drawBackground();
-
-
-// FOOD
 
 ctx.fillStyle="red";
 
@@ -137,7 +92,6 @@ box
 );
 
 
-// SNAKE
 
 snake.forEach(
 
@@ -154,7 +108,6 @@ index===0
 :
 
 "lime";
-
 
 ctx.fillRect(
 
@@ -178,8 +131,14 @@ box
 
 function moveSnake(){
 
-if(!direction)
+if(!direction){
+
+drawGame();
+
 return;
+
+}
+
 
 
 let head={
@@ -187,6 +146,7 @@ let head={
 ...snake[0]
 
 };
+
 
 
 if(direction==="LEFT")
@@ -209,9 +169,9 @@ head.x<0 ||
 
 head.y<0 ||
 
-head.x>=rows ||
+head.x>=grid ||
 
-head.y>=cols ||
+head.y>=grid ||
 
 snake.some(
 
@@ -227,21 +187,15 @@ part.y===head.y
 
 {
 
-clearInterval(
-gameInterval
-);
-
 alert(
+
 "Game Over!\nScore: "
+
 +score
+
 );
 
-gameStarted=false;
-
-statusText.innerText=
-"Show hand to restart";
-
-resetGame();
+location.reload();
 
 return;
 
@@ -259,14 +213,19 @@ head.x===food.x &&
 
 head.y===food.y
 
-){
+)
+
+{
 
 score++;
 
 scoreText.innerText=
-"Score: "+score;
 
-food=createFood();
+"Score: "
+
++score;
+
+createFood();
 
 }
 
@@ -276,13 +235,7 @@ snake.pop();
 
 }
 
-}
 
-
-
-function gameLoop(){
-
-moveSnake();
 
 drawGame();
 
@@ -290,60 +243,28 @@ drawGame();
 
 
 
-function startGame(){
-
-if(gameStarted)
-return;
-
-gameStarted=true;
-
-statusText.innerText=
-"Game Started!";
-
-gameInterval=
-
 setInterval(
 
-gameLoop,
+moveSnake,
 
 180
 
 );
 
-}
 
 
-
-navigator.mediaDevices
-
-.getUserMedia({
-
-video:true
-
-})
-
-.then(
-
-stream=>{
-
-video.srcObject=
-
-stream;
-
-}
-
-);
+drawGame();
 
 
 
 
-const hands=
 
+const hands =
 new Hands({
 
 locateFile:
 
-file=>
+(file)=>
 
 `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
 
@@ -365,7 +286,7 @@ minTrackingConfidence:0.7
 
 hands.onResults(
 
-results=>{
+(results)=>{
 
 if(
 
@@ -379,31 +300,23 @@ return;
 
 
 
-if(!gameStarted)
+if(!gameStarted){
 
-startGame();
+statusText.innerText=
 
+"Hand Detected";
 
+gameStarted=true;
 
-const now=
-
-Date.now();
-
-if(
-
-now-lastGestureTime<250
-
-)
-
-return;
-
-lastGestureTime=now;
+}
 
 
 
 const hand=
 
 results.multiHandLandmarks[0];
+
+
 
 const x=
 
@@ -426,6 +339,7 @@ direction!=="RIGHT"
 direction="LEFT";
 
 
+
 else if(
 
 x>0.7 &&
@@ -437,6 +351,7 @@ direction!=="LEFT"
 direction="RIGHT";
 
 
+
 else if(
 
 y<0.3 &&
@@ -446,6 +361,7 @@ direction!=="DOWN"
 )
 
 direction="UP";
+
 
 
 else if(
@@ -463,6 +379,26 @@ direction="DOWN";
 }
 
 );
+
+
+
+
+
+navigator.mediaDevices
+
+.getUserMedia({
+
+video:true
+
+})
+
+.then(
+
+(stream)=>{
+
+video.srcObject=
+
+stream;
 
 
 
@@ -495,4 +431,23 @@ height:480
 );
 
 
+
 camera.start();
+
+
+
+}
+
+)
+
+.catch(
+
+()=>{
+
+statusText.innerText=
+
+"Camera Permission Denied";
+
+}
+
+);
